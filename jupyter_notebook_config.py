@@ -6,7 +6,7 @@ c.ServerProxy.servers = {
     # (via the shell and Python) and handle the display of large files.
     # See: https://js9.si.edu/js9/help/helper.html
     'js9Helper': {
-        'command': ['bash', '-c', 'cd /opt/js9-web/; node js9Helper.js'],
+        'command': ['bash', '-c', 'node /opt/js9-web/js9Helper.js'],
         'port': 2718,
         'launcher_entry': {
            'enabled': False,
