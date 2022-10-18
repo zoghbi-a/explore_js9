@@ -81,17 +81,11 @@ ADD entrypoint.sh /entrypoint.sh
 # ENTRYPOINT bash /entrypoint.sh
 
 
-COPY jupyter_notebook_config.py /home/$USER/.jupyter/jupyter_notebook_config.py
-USER root
-RUN chown -R ${USER}:${USER} .jupyter
-USER ${USER}
-
 
 ENV SHELL=/usr/bin/bash
 
 ADD jupjs9 jupjs9
+ADD js9prefs.js /opt/js9-web/
 USER root
 RUN chown -R $USER:$USER jupjs9
 USER $USER
-
-RUN pip install hatch
