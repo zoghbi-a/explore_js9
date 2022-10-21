@@ -87,5 +87,6 @@ ENV SHELL=/usr/bin/bash
 ADD jupjs9 jupjs9
 ADD js9prefs.js /opt/js9-web/
 USER root
-RUN chown -R $USER:$USER jupjs9
+RUN chown -R $USER:$USER jupjs9 /opt/js9-web
 USER $USER
+RUN cp -r jupjs9/index.html  /opt/js9-web/
