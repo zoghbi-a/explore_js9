@@ -47,46 +47,53 @@ RUN mamba install -y \
         seaborn \
         scipy \
         numpy \
-        cfitsio && \
-    mamba install -y -c conda-forge \
-        nodejs=17 \
-        emcee \
-        jupyter-server-proxy \
-        sidecar && \
+        && \
     mamba clean -y --all
 # update bashrc to use base
 RUN echo 'source /opt/conda/bin/activate base' > ~/.bashrc
 
+WORKDIR ${HOME}
+ENV SHELL=/usr/bin/bash
+
+
+USER root
+# entrypoint
+RUN echo 'jupyter lab --ip 0.0.0.0 --no-browser --debug --ServerApp.token="" --ServerApp.password=""' >\
+    /entrypoint.sh
+USER $USER
+    
+    
+RUN mamba install -y -c conda-forge \
+    nodejs=18 \
+    cfitsio \
+    jupyter-server-proxy sidecar \
+    websockify \
+    && \
+    mamba clean -y --all
 
 
 
 # js9 and pyjs9 
-RUN git clone https://github.com/zoghbi-a/js9.git /tmp/js9 && \
-   cd /tmp/js9 && git checkout jh_updates && \
-   \
-   pip install git+https://github.com/ericmandel/pyjs9.git@f5db48d4b4486236eb3f97221bc54a0dc8f4d81f
-
-RUN cd /tmp/js9 && \
-    ./configure --prefix=/opt/js9 \
+USER root
+RUN git clone -b jh_updates --depth=1 https://github.com/zoghbi-a/js9.git /tmp/js9 && \
+    cd /tmp/js9 && \
+    ./configure --prefix=/usr/local \
         --with-helper=nodejs \
         --with-webdir=/opt/js9-web \
         --with-cfitsio=/opt/conda && \
     make && \
-    make install && \
-    printf "\n# js9\nexport PATH=/opt/js9/bin:\$PATH\n" >> ~/.bashrc
+    make install
+USER $USER
 
-WORKDIR ${HOME}
+RUN pip install git+https://github.com/ericmandel/pyjs9.git@f5db48d4b4486236eb3f97221bc54a0dc8f4d81f
 
-ADD entrypoint.sh /entrypoint.sh
-# ENTRYPOINT bash /entrypoint.sh
-
-
-
-ENV SHELL=/usr/bin/bash
+ADD js9prefs.js index.html /opt/js9-web/
+ADD run_websockify.sh /usr/local/bin/
+ADD proxy.js .
 
 ADD jupjs9 jupjs9
-ADD js9prefs.js /opt/js9-web/
+RUN cd jupjs9 && pip install . && cd ..
 USER root
-RUN chown -R $USER:$USER jupjs9 /opt/js9-web
+RUN chmod +x /usr/local/bin/run_websockify.sh
+RUN chown -R $USER:$USER $HOME /opt/js9-web
 USER $USER
-RUN cp -r jupjs9/index.html  /opt/js9-web/
