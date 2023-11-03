@@ -27,13 +27,15 @@ RUN apt-get update && \
 # conda 
 RUN mkdir -p /opt && chown ${USER}:${USER} /opt
 USER ${USER}
-RUN curl https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/install-conda.sh && \
-    bash /tmp/install-conda.sh -b -f -p /opt/conda && \
-    rm /tmp/install-conda.sh
+RUN cd /opt \
+ && curl -L "https://github.com/conda-forge/miniforge/releases/download/23.3.1-1/Miniforge3-23.3.1-1-Linux-x86_64.sh" -o miniconda.sh \
+ && bash miniconda.sh -b -p /opt/miniconda3 \
+ && rm -f miniconda.sh \
+ && rm -rf /opt/miniconda3/pkgs/*
+ENV PATH=/opt/miniconda3/bin:$PATH
 
 # needed to get conda to work properly
 ENV BASH_ENV=~/.bashrc
-RUN echo 'source /opt/conda/bin/activate' > ~/.bashrc
 SHELL ["/bin/bash", "-c"]
 
 
@@ -50,7 +52,7 @@ RUN mamba install -y \
         && \
     mamba clean -y --all
 # update bashrc to use base
-RUN echo 'source /opt/conda/bin/activate base' > ~/.bashrc
+#RUN echo 'source /opt/conda/bin/activate base' > ~/.bashrc
 
 WORKDIR ${HOME}
 ENV SHELL=/usr/bin/bash
@@ -83,17 +85,19 @@ RUN git clone -b jh_updates --depth=1 https://github.com/zoghbi-a/js9.git /tmp/j
         --with-cfitsio=/opt/conda && \
     make && \
     make install
-USER $USER
-
-RUN pip install git+https://github.com/ericmandel/pyjs9.git@f5db48d4b4486236eb3f97221bc54a0dc8f4d81f
 
 ADD js9prefs.js index.html /opt/js9-web/
-ADD run_websockify.sh /usr/local/bin/
-ADD proxy.js .
+RUN cd /opt/js9-web/ && \
+    npm i socket.io uuid rimraf
 
-ADD jupjs9 jupjs9
-RUN cd jupjs9 && pip install . && cd ..
+USER $USER
+RUN pip install git+https://github.com/zoghbi-a/jpyjs9.git && \
+    rm -rf /opt/conda/pkgs/* /home/$user/.cache
+
+
+#ADD jupjs9 jupjs9
+#RUN cd jupjs9 && pip install . && cd ..
 USER root
-RUN chmod +x /usr/local/bin/run_websockify.sh
+#RUN chmod +x /usr/local/bin/run_websockify.sh
 RUN chown -R $USER:$USER $HOME /opt/js9-web
 USER $USER
