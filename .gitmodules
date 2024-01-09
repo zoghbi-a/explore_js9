@@ -1,0 +1,3 @@
+[submodule "jpyjs9"]
+	path = jpyjs9
+	url = git@github.com:zoghbi-a/jpyjs9.git
