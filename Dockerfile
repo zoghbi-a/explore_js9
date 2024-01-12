@@ -37,15 +37,21 @@ RUN git clone -b jh_updates --depth=1 https://github.com/zoghbi-a/js9.git /tmp/j
     make install
 
 # ADD js9prefs.js index.html /opt/js9-web/
-RUN cd /opt/js9-web/ && \
+RUN cd $JS9_WEB_PATH && \
     npm i socket.io uuid rimraf && \
-    fix-permissions /opt/js9-web
+    fix-permissions $JS9_WEB_PATH
 
 USER $USER
 
 # jupyter-server-proxy fix to get sockets to work
-RUN pip install git+https://github.com/zoghbi-a/jupyter-server-proxy.git@js9-fix
+RUN git clone -b js9-fix --depth=1 https://github.com/zoghbi-a/jupyter-server-proxy.git /tmp/jupyter-server-proxy \
+ && pip install /tmp/jupyter-server-proxy \
+ && git clone -b socket-fix --depth=1 https://github.com/zoghbi-a/pyjs9.git /tmp/pyjs9 \
+ && pip install /tmp/pyjs9 \
+ && git clone --depth=1 https://github.com/zoghbi-a/jpyjs9.git /tmp/jpyjs9
+ && pip install /tmp/jpyjs9 \
+ && rm -rf /tmp/jupyter-server-proxy /tmp/pyjs9 /tmp/pyjs9
 
-COPY --chown=1000:1000 jpyjs9 jpyjs9
-RUN pip install ./jpyjs9
+# COPY --chown=1000:1000 jpyjs9 jpyjs9
+# RUN pip install ./jpyjs9
 
