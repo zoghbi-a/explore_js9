@@ -7,4 +7,4 @@ build:
     
     
 run:
-	docker run -it -p 8885:8888 js9:latest
+	docker run -it -p 8885:8000 js9:latest bash

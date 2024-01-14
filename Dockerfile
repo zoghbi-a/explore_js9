@@ -48,10 +48,15 @@ RUN git clone -b js9-fix --depth=1 https://github.com/zoghbi-a/jupyter-server-pr
  && pip install /tmp/jupyter-server-proxy \
  && git clone -b socket-fix --depth=1 https://github.com/zoghbi-a/pyjs9.git /tmp/pyjs9 \
  && pip install /tmp/pyjs9 \
- && git clone --depth=1 https://github.com/zoghbi-a/jpyjs9.git /tmp/jpyjs9
+ && git clone --depth=1 https://github.com/zoghbi-a/jpyjs9.git /tmp/jpyjs9 \
  && pip install /tmp/jpyjs9 \
  && rm -rf /tmp/jupyter-server-proxy /tmp/pyjs9 /tmp/pyjs9
 
-# COPY --chown=1000:1000 jpyjs9 jpyjs9
-# RUN pip install ./jpyjs9
+#COPY --chown=1000:1000 jpyjs9 jpyjs9
+#RUN pip install ./jpyjs9
 
+# add jupyterhub
+RUN mamba install -y -c conda-forge jupyterhub
+USER root
+RUN chpasswd <<< "jovyan:pass"
+USER $USER
